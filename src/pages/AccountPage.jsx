@@ -28,7 +28,7 @@ const NAV_ITEMS = [
   { id:"account",       label:"Mijn account",         icon:"person" },
   { id:"nieuwsbrief",   label:"Nieuwsbrief",           icon:"bell" },
   { id:"abonnementen",  label:"Mijn abonnementen",     icon:"card" },
-  { id:"gebruikers",    label:"Gebruikers uitnodigen", icon:"people", disabled:true },
+  { id:"gebruikers",    label:"Gebruikers uitnodigen", icon:"people" },
   { id:"facturatie",    label:"Facturatie",            icon:"billing" },
 ]
 
@@ -374,6 +374,215 @@ function FacturatieSection() {
   )
 }
 
+// ─── Gebruikers sectie ───────────────────────────────────────────────────────
+const MOCK_USERS = [
+  { email:"demo@aegon.com",                      role:"Admin",  pending:false },
+  { email:"jan.de.vries@aegon.com",              role:"Lezer",  pending:false },
+  { email:"sophie.bakker@aegon.com",             role:"Lezer",  pending:false },
+  { email:"thomas.smit@aegon.com",               role:"Lezer",  pending:false },
+  { email:"anna.visser@aegon.com",               role:"Lezer",  pending:false },
+  { email:"dirkjan.brummelman@aegon.com",        role:"Lezer",  pending:true  },
+]
+const MAX_SEATS = 16
+
+function GebruikersSection({ planType }) {
+  const isBusiness = planType === "business"
+  const [users, setUsers]       = useState(MOCK_USERS)
+  const [showModal, setShowModal] = useState(false)
+  const [inviteInput, setInviteInput] = useState("")
+  const [inviteList, setInviteList]   = useState([])
+  const [openMenu, setOpenMenu] = useState(null)
+
+  // Upsell variant voor persoonlijk abonnement
+  if (!isBusiness) {
+    return (
+      <div style={{ background:C.white, borderRadius:10, padding:"1.75rem", boxShadow:"0 2px 16px rgba(12,24,46,0.06)" }}>
+        <h2 style={{ fontFamily:"var(--font-sans)", fontSize:"1.375rem", fontWeight:800, color:C.navy, marginBottom:"1.5rem" }}>Gebruikers uitnodigen</h2>
+        <div style={{ background:"#EEF4FF", border:`1px solid #C3D4F5`, borderRadius:10, padding:"1.75rem 2rem", display:"flex", alignItems:"center", gap:"2rem", position:"relative", overflow:"hidden" }}>
+          <div style={{ flex:1 }}>
+            <div style={{ fontFamily:"var(--font-sans)", fontWeight:800, fontSize:"1.125rem", color:C.navy, marginBottom:"0.5rem" }}>Nodig collega's uit</div>
+            <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.gray700, lineHeight:"var(--lh-body)", marginBottom:"1.25rem" }}>
+              Je hebt momenteel een individueel abonnement. Wil je gebruikers uitnodigen? Stap dan over naar een Business-account.
+            </div>
+            <div style={{ display:"flex", alignItems:"center", gap:"1rem" }}>
+              <button className="btn-primary" style={{ padding:"0.625rem 1.5rem" }} onClick={() => alert("POC: upgrade naar Business flow")}>
+                Upgrade naar Business
+              </button>
+              <span style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.gray500 }}>Vanaf €33,–</span>
+            </div>
+          </div>
+          <div style={{ position:"relative", flexShrink:0, width:180, height:100 }}>
+            <div style={{ display:"flex", gap:"-0.5rem" }}>
+              {["#E8B4B8","#B4C8E8","#B4E8C8"].map((bg, i) => (
+                <div key={i} style={{ width:44, height:44, borderRadius:"50%", background:bg, border:`2px solid ${C.white}`, marginLeft: i>0 ? -10 : 0, display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"var(--font-sans)", fontWeight:700, fontSize:"0.8rem", color:C.navy }}>
+                  {["JV","SB","TS"][i]}
+                </div>
+              ))}
+            </div>
+            <div style={{ position:"absolute", top:-10, right:-10, width:90, height:90, borderRadius:"50%", background:C.red, display:"flex", alignItems:"center", justifyContent:"center", textAlign:"center", fontFamily:"var(--font-sans)", fontSize:"0.7rem", fontWeight:700, color:C.white, lineHeight:1.3, padding:"0.5rem" }}>
+              Nu<br/>6 maanden<br/>gratis
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Business admin variant
+  function addInviteEmail(e) {
+    if (e.key === "Enter" && inviteInput.trim()) {
+      const email = inviteInput.trim()
+      if (email.includes("@") && !inviteList.includes(email)) {
+        setInviteList(prev => [...prev, email])
+      }
+      setInviteInput("")
+    }
+  }
+
+  function removeInviteEmail(email) {
+    setInviteList(prev => prev.filter(e => e !== email))
+  }
+
+  function sendInvites() {
+    if (inviteList.length === 0) return
+    const newUsers = inviteList.map(email => ({ email, role:"Lezer", pending:true }))
+    setUsers(prev => [...prev, ...newUsers])
+    setInviteList([])
+    setInviteInput("")
+    setShowModal(false)
+  }
+
+  function changeRole(email, newRole) {
+    setUsers(prev => prev.map(u => u.email === email ? {...u, role:newRole} : u))
+  }
+
+  function removeUser(email) {
+    setUsers(prev => prev.filter(u => u.email !== email))
+    setOpenMenu(null)
+  }
+
+  return (
+    <div style={{ background:C.white, borderRadius:10, padding:"1.75rem", boxShadow:"0 2px 16px rgba(12,24,46,0.06)" }}>
+      <h2 style={{ fontFamily:"var(--font-sans)", fontSize:"1.375rem", fontWeight:800, color:C.navy, marginBottom:"0.375rem" }}>Gebruikers uitnodigen</h2>
+      <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.875rem", color:C.gray500, lineHeight:"var(--lh-body)", marginBottom:"1.5rem", maxWidth:680 }}>
+        Met de corporate licentie van uw organisatie profiteert u niet alleen van alle voordelen die Investment Officer biedt, maar kunnen ook uw collega's hier zonder beperkingen of extra kosten gebruik van maken.
+      </p>
+
+      {/* Gebruikers card */}
+      <div style={{ border:`1px solid ${C.gray200}`, borderRadius:8 }}>
+        {/* Card header */}
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"1rem 1.25rem", borderBottom:`1px solid ${C.gray100}` }}>
+          <span style={{ fontFamily:"var(--font-sans)", fontWeight:700, fontSize:"1rem", color:C.navy }}>Gebruikers</span>
+          <button onClick={() => setShowModal(true)}
+            style={{ background:C.navy, color:C.white, border:"none", borderRadius:6, padding:"0.5rem 1.125rem", fontFamily:"var(--font-sans)", fontSize:"0.875rem", fontWeight:600, cursor:"pointer" }}>
+            Gebruiker uitnodigen
+          </button>
+        </div>
+
+        {/* Users header row */}
+        <div style={{ background:C.gray50, padding:"0.875rem 1.25rem", display:"flex", justifyContent:"space-between", alignItems:"flex-start", borderBottom:`1px solid ${C.gray100}` }}>
+          <div>
+            <div style={{ fontFamily:"var(--font-sans)", fontWeight:700, fontSize:"0.9rem", color:C.navy }}>Users</div>
+            <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.8rem", color:C.gray500, marginTop:"0.2rem" }}>Alle seats krijgen automatisch toegang tot de landen waarvoor je bent aangemeld</div>
+          </div>
+          <div style={{ textAlign:"right", flexShrink:0, marginLeft:"1rem" }}>
+            <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.75rem", color:C.gray500 }}>Users</div>
+            <div style={{ fontFamily:"var(--font-sans)", fontSize:"1.25rem", fontWeight:800, color:C.navy }}>{users.length}/{MAX_SEATS}</div>
+          </div>
+        </div>
+
+        {/* User rows */}
+        {users.map((u, i) => {
+          const ini = u.email[0].toUpperCase()
+          return (
+            <div key={i} style={{ display:"flex", alignItems:"center", gap:"0.875rem", padding:"0.875rem 1.25rem", borderBottom: i < users.length-1 ? `1px solid ${C.gray100}` : "none", position:"relative" }}>
+              {/* Avatar */}
+              <div style={{ width:36, height:36, borderRadius:"50%", background: u.pending ? C.gray200 : C.red, display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"var(--font-sans)", fontWeight:700, fontSize:"0.875rem", color: u.pending ? C.gray500 : C.white, flexShrink:0 }}>
+                {ini}
+              </div>
+
+              {/* Email + pending */}
+              <div style={{ flex:1, minWidth:0 }}>
+                <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.navy, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{u.email}</div>
+                {u.pending && <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.75rem", color:C.gray500, marginTop:"0.15rem" }}>Nog niet geaccepteerd</div>}
+              </div>
+
+              {/* Role dropdown */}
+              <div style={{ position:"relative" }}>
+                <select value={u.role} onChange={e => changeRole(u.email, e.target.value)}
+                  disabled={u.role === "Admin"}
+                  style={{ fontFamily:"var(--font-sans)", fontSize:"0.875rem", color:C.navy, border:`1px solid ${C.gray200}`, borderRadius:4, padding:"0.3rem 1.75rem 0.3rem 0.625rem", background:C.white, cursor: u.role==="Admin" ? "default" : "pointer", appearance:"none", backgroundImage:"url(\"data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%238A8A82' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E\")", backgroundRepeat:"no-repeat", backgroundPosition:"right 0.5rem center" }}>
+                  <option>Admin</option>
+                  <option>Lezer</option>
+                </select>
+              </div>
+
+              {/* ··· menu */}
+              <div style={{ position:"relative" }}>
+                <button onClick={() => setOpenMenu(openMenu === i ? null : i)}
+                  style={{ background:"none", border:"none", cursor:"pointer", color:C.gray500, fontSize:"1.25rem", lineHeight:1, padding:"0.25rem 0.5rem", borderRadius:4 }}>
+                  ···
+                </button>
+                {openMenu === i && (
+                  <div style={{ position:"absolute", right:0, top:"calc(100% + 4px)", background:C.white, border:`1px solid ${C.gray200}`, borderRadius:6, boxShadow:"0 4px 16px rgba(12,24,46,0.12)", zIndex:10, minWidth:140 }}>
+                    <button onClick={() => removeUser(u.email)}
+                      style={{ display:"block", width:"100%", textAlign:"left", padding:"0.625rem 1rem", fontFamily:"var(--font-sans)", fontSize:"0.875rem", color:C.red, background:"none", border:"none", cursor:"pointer" }}>
+                      Verwijderen
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Invite modal */}
+      {showModal && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal-card" onClick={e => e.stopPropagation()} style={{ maxWidth:560 }}>
+            <div className="modal-header">
+              <div>
+                <div className="modal-title">Nieuwe gebruiker uitnodigen</div>
+                <div className="modal-subtitle">Uitgenodigde gebruikers ontvangen een email</div>
+              </div>
+              <button className="close-btn" onClick={() => setShowModal(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              {/* Email tag input */}
+              <div style={{ border:`1.5px solid ${C.gray300}`, borderRadius:6, padding:"0.625rem 0.875rem", minHeight:80, cursor:"text" }}
+                onClick={() => document.getElementById("invite-input").focus()}>
+                <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.75rem", color:C.gray500, marginBottom:"0.375rem" }}>Voeg gebruikers toe aan jouw organisatie</div>
+                <div style={{ display:"flex", flexWrap:"wrap", gap:"0.375rem", alignItems:"center" }}>
+                  {inviteList.map(email => (
+                    <span key={email} style={{ display:"inline-flex", alignItems:"center", gap:"0.375rem", background:C.gray100, border:`1px solid ${C.gray200}`, borderRadius:4, padding:"0.2rem 0.5rem", fontFamily:"var(--font-sans)", fontSize:"0.8125rem", color:C.navy }}>
+                      {email}
+                      <button onClick={() => removeInviteEmail(email)} style={{ background:"none", border:"none", cursor:"pointer", color:C.gray500, lineHeight:1, fontSize:"1rem", padding:0 }}>×</button>
+                    </span>
+                  ))}
+                  <input id="invite-input" value={inviteInput} onChange={e => setInviteInput(e.target.value)} onKeyDown={addInviteEmail}
+                    placeholder={inviteList.length === 0 ? "E-mailadres" : ""}
+                    style={{ border:"none", outline:"none", fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.navy, minWidth:180, flex:1, background:"transparent" }} />
+                </div>
+              </div>
+              <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.8rem", color:C.gray500, marginTop:"0.5rem", marginBottom:"1.5rem" }}>
+                Druk op Enter om een e-mailadres toe te voegen. Je kunt meerdere adressen toevoegen.
+              </p>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0.75rem" }}>
+                <button className="btn-secondary" style={{ width:"100%" }} onClick={() => { setShowModal(false); setInviteList([]); setInviteInput("") }}>Annuleer</button>
+                <button onClick={sendInvites} disabled={inviteList.length === 0}
+                  style={{ background: inviteList.length > 0 ? C.navy : C.gray200, color: inviteList.length > 0 ? C.white : C.gray500, border:"none", borderRadius:4, padding:"0.75rem", fontFamily:"var(--font-sans)", fontWeight:700, fontSize:"0.9375rem", cursor: inviteList.length > 0 ? "pointer" : "not-allowed", transition:"background 0.2s" }}>
+                  Uitnodiging sturen
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Main AccountPage ─────────────────────────────────────────────────────────
 export default function AccountPage({ user, planType, onBack }) {
   const [section, setSection] = useState("account")
@@ -403,6 +612,7 @@ export default function AccountPage({ user, planType, onBack }) {
             {section === "account"      && <AccountSection user={currentUser} onUpdate={setCurrentUser} />}
             {section === "nieuwsbrief"  && <NewsletterSection />}
             {section === "abonnementen" && <AbonnementenSection planType={planType} />}
+            {section === "gebruikers"   && <GebruikersSection planType={planType} />}
             {section === "facturatie"   && <FacturatieSection />}
           </div>
         </div>

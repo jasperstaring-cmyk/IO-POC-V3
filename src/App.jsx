@@ -43,10 +43,10 @@ export default function App() {
     }
   }
 
-  function handleRegComplete() {
+  function handleRegComplete(isBusiness) {
     setLoggedIn(true)
     setUserEmail("nieuw@example.com")
-    setActivePlanType(selectedPlan || "freemium")
+    setActivePlanType(isBusiness ? "business" : selectedPlan || "freemium")
     setUserData({ firstName:"Nieuw", lastName:"Gebruiker", email:"nieuw@example.com", jobRole:"Portfolio Manager", initials:"N" })
     setView("article")
   }
@@ -74,7 +74,7 @@ export default function App() {
         <PersonalFlow selectedPlan={selectedPlan} onComplete={handleRegComplete} onBack={() => setView("subscriptions")} onGoLogin={handleGoLogin} />
       )}
       {view === "business" && (
-        <BusinessFlow onComplete={handleRegComplete} onBack={() => setView("subscriptions")} onGoLogin={handleGoLogin} />
+        <BusinessFlow onComplete={() => handleRegComplete(true)} onBack={() => setView("subscriptions")} onGoLogin={handleGoLogin} />
       )}
       {view === "account" && (
         <AccountPage user={userData} planType={activePlanType} onBack={() => setView("article")} />
