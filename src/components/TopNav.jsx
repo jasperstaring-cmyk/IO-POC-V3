@@ -3,7 +3,7 @@ import IOLogo from './IOLogo.jsx'
 
 const NAV_LINKS = ["Beleggen","Opinie","Sector","Research","Podcasts","Partners","Events"]
 
-export default function TopNav({ onLogin, onSubscribe, loggedIn, userEmail, onLogout }) {
+export default function TopNav({ onLogin, onSubscribe, loggedIn, userEmail, onLogout, onAccount }) {
   return (
     <header style={{ position:"sticky", top:0, zIndex:50, background:C.white, borderBottom:`1px solid ${C.gray100}`, boxShadow:"0 1px 6px rgba(12,24,46,0.06)" }}>
       <div style={{ maxWidth:1120, margin:"0 auto", padding:"0 1.5rem", height:56, display:"flex", alignItems:"center", gap:"2rem" }}>
@@ -14,7 +14,11 @@ export default function TopNav({ onLogin, onSubscribe, loggedIn, userEmail, onLo
         <div style={{ display:"flex", alignItems:"center", gap:"1rem" }}>
           {loggedIn ? (
             <>
-              <span style={{ fontFamily:"var(--font-sans)", fontSize:"0.875rem", color:C.gray500 }}>{userEmail}</span>
+              <button onClick={onAccount} style={{ background:"none", border:"none", cursor:"pointer", fontFamily:"var(--font-sans)", fontSize:"0.875rem", color:C.gray500, textDecoration:"underline", textDecorationColor:"transparent", transition:"text-decoration-color 0.2s" }}
+                onMouseEnter={e => e.target.style.textDecorationColor=C.gray300}
+                onMouseLeave={e => e.target.style.textDecorationColor="transparent"}>
+                {userEmail}
+              </button>
               <button className="btn-secondary" style={{ padding:"0.4rem 1rem", fontSize:"0.875rem" }} onClick={onLogout}>Uitloggen</button>
             </>
           ) : (

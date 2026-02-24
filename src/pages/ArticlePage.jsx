@@ -45,10 +45,10 @@ function PaywallBlock({ onLogin, onSubscribe }) {
   )
 }
 
-export default function ArticlePage({ loggedIn, userEmail, onLogin, onSubscribe, onLogout }) {
+export default function ArticlePage({ loggedIn, userEmail, onLogin, onSubscribe, onLogout, onAccount }) {
   return (
     <div style={{ minHeight:"100vh", background:C.white }}>
-      <TopNav onLogin={onLogin} onSubscribe={onSubscribe} loggedIn={loggedIn} userEmail={userEmail} onLogout={onLogout} />
+      <TopNav onLogin={onLogin} onSubscribe={onSubscribe} loggedIn={loggedIn} userEmail={userEmail} onLogout={onLogout} onAccount={onAccount} />
       <div style={{ background:C.navy, color:C.white, padding:"0.5rem 1.5rem", display:"flex", alignItems:"center", justifyContent:"center", gap:"1.5rem", fontFamily:"var(--font-sans)", fontSize:"0.8125rem" }}>
         <span style={{ opacity:0.6 }}>POC Demo →</span>
         <button onClick={onLogin} style={{ background:"rgba(255,255,255,0.12)", border:"none", color:C.white, padding:"0.3rem 0.875rem", borderRadius:4, cursor:"pointer", fontSize:"0.8125rem", fontFamily:"var(--font-sans)" }}>Inloggen</button>
