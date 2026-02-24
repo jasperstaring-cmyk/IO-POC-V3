@@ -4,6 +4,7 @@ import './styles/global.css'
 import ArticlePage        from './pages/ArticlePage.jsx'
 import SubscriptionPage   from './pages/SubscriptionPage.jsx'
 import AccountPage        from './pages/AccountPage.jsx'
+import OnboardingPage     from './pages/OnboardingPage.jsx'
 import AccountTypeChoice  from './flows/AccountTypeChoice.jsx'
 import PersonalFlow       from './flows/PersonalFlow.jsx'
 import BusinessFlow       from './flows/BusinessFlow.jsx'
@@ -48,7 +49,7 @@ export default function App() {
     setUserEmail("nieuw@example.com")
     setActivePlanType(isBusiness ? "business" : selectedPlan || "freemium")
     setUserData({ firstName:"Nieuw", lastName:"Gebruiker", email:"nieuw@example.com", jobRole:"Portfolio Manager", initials:"N" })
-    setView("article")
+    setView("onboarding")
   }
 
   function handleGoLogin() { setView("article"); setModal("login") }
@@ -75,6 +76,12 @@ export default function App() {
       )}
       {view === "business" && (
         <BusinessFlow onComplete={() => handleRegComplete(true)} onBack={() => setView("subscriptions")} onGoLogin={handleGoLogin} />
+      )}
+      {view === "onboarding" && (
+        <OnboardingPage
+          onFinish={() => setView("article")}
+          onDashboard={() => setView("account")}
+        />
       )}
       {view === "account" && (
         <AccountPage user={userData} planType={activePlanType} onBack={() => setView("article")} />
