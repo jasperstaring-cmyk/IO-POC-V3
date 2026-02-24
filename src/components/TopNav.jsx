@@ -1,0 +1,30 @@
+import { C } from '../tokens.js'
+import IOLogo from './IOLogo.jsx'
+
+const NAV_LINKS = ["Beleggen","Opinie","Sector","Research","Podcasts","Partners","Events"]
+
+export default function TopNav({ onLogin, onSubscribe, loggedIn, userEmail, onLogout }) {
+  return (
+    <header style={{ position:"sticky", top:0, zIndex:50, background:C.white, borderBottom:`1px solid ${C.gray100}`, boxShadow:"0 1px 6px rgba(12,24,46,0.06)" }}>
+      <div style={{ maxWidth:1120, margin:"0 auto", padding:"0 1.5rem", height:56, display:"flex", alignItems:"center", gap:"2rem" }}>
+        <IOLogo />
+        <nav style={{ display:"flex", gap:"1.5rem", flex:1 }}>
+          {NAV_LINKS.map(l => <a key={l} className="nav-link" href="#">{l}</a>)}
+        </nav>
+        <div style={{ display:"flex", alignItems:"center", gap:"1rem" }}>
+          {loggedIn ? (
+            <>
+              <span style={{ fontFamily:"var(--font-sans)", fontSize:"0.875rem", color:C.gray500 }}>{userEmail}</span>
+              <button className="btn-secondary" style={{ padding:"0.4rem 1rem", fontSize:"0.875rem" }} onClick={onLogout}>Uitloggen</button>
+            </>
+          ) : (
+            <>
+              <button className="nav-link" style={{ background:"none", border:"none", cursor:"pointer", fontWeight:500 }} onClick={onLogin}>Inloggen</button>
+              <button className="btn-navy" onClick={onSubscribe}>Abonneren</button>
+            </>
+          )}
+        </div>
+      </div>
+    </header>
+  )
+}

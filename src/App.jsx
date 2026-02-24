@@ -1,121 +1,131 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import './styles/global.css'
 
-function App() {
-  const [count, setCount] = useState(0)
+import ArticlePage        from './pages/ArticlePage.jsx'
+import SubscriptionPage   from './pages/SubscriptionPage.jsx'
+import AccountTypeChoice  from './flows/AccountTypeChoice.jsx'
+import PersonalFlow       from './flows/PersonalFlow.jsx'
+import BusinessFlow       from './flows/BusinessFlow.jsx'
+import LoginModal         from './flows/LoginModal.jsx'
+
+/**
+ * Global app state lives here. App.jsx is intentionally thin —
+ * it only handles top-level routing and passes callbacks down.
+ *
+ * Views:
+ *  "article"       – Article page with paywall
+ *  "subscriptions" – Subscription overview page
+ *  "choice"        – Personal vs Business split screen
+ *  "personal"      – Module 3A personal registration
+ *  "business"      – Module 3B business registration
+ */
+export default function App() {
+  const [view, setView]           = useState("article")
+  const [modal, setModal]         = useState(null)      // null | "login"
+  const [loggedIn, setLoggedIn]   = useState(false)
+  const [userEmail, setUserEmail] = useState("")
+  const [selectedPlan, setSelectedPlan] = useState(null)
+
+  function handleLoginSuccess(email) {
+    setLoggedIn(true)
+    setUserEmail(email)
+  }
+
+  function handleLogout() {
+    setLoggedIn(false)
+    setUserEmail("")
+    setView("article")
+  }
+
+  /**
+   * Entry point for all registration triggers.
+   * "business"         → skip choice screen, go straight to BusinessFlow
+   * "personal_<planId>"→ skip choice screen, go straight to PersonalFlow with plan pre-selected
+   * default            → show AccountTypeChoice first
+   */
+  function handleStartReg(trigger) {
+    if (trigger === "business") {
+      setSelectedPlan(null)
+      setView("business")
+    } else if (trigger && trigger.startsWith("personal_")) {
+      const planId = trigger.replace("personal_", "")
+      setSelectedPlan(planId === "check" ? null : planId)
+      setView("personal")
+    } else {
+      setSelectedPlan(null)
+      setView("choice")
+    }
+  }
+
+  function handleAccountTypeChoice(type) {
+    setView(type === "business" ? "business" : "personal")
+  }
+
+  function handleRegComplete() {
+    setLoggedIn(true)
+    setUserEmail("nieuw@example.com")
+    setView("article")
+  }
+
+  function handleBackToSubscriptions() {
+    setView("subscriptions")
+  }
+
+  function handleGoLogin() {
+    setView("article")
+    setModal("login")
+  }
 
   return (
     <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+      {view === "article" && (
+        <ArticlePage
+          loggedIn={loggedIn}
+          userEmail={userEmail}
+          onLogin={() => setModal("login")}
+          onSubscribe={() => setView("subscriptions")}
+          onLogout={handleLogout}
+        />
+      )}
 
-      <div className="ticks"></div>
+      {view === "subscriptions" && (
+        <SubscriptionPage
+          onStartReg={handleStartReg}
+          onLogin={() => setModal("login")}
+        />
+      )}
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      {view === "choice" && (
+        <AccountTypeChoice
+          onChoose={handleAccountTypeChoice}
+          onBack={() => setView("subscriptions")}
+        />
+      )}
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
+      {view === "personal" && (
+        <PersonalFlow
+          selectedPlan={selectedPlan}
+          onComplete={handleRegComplete}
+          onBack={handleBackToSubscriptions}
+          onGoLogin={handleGoLogin}
+        />
+      )}
+
+      {view === "business" && (
+        <BusinessFlow
+          onComplete={handleRegComplete}
+          onBack={handleBackToSubscriptions}
+          onGoLogin={handleGoLogin}
+        />
+      )}
+
+      {modal === "login" && (
+        <LoginModal
+          onClose={() => setModal(null)}
+          onGoRegister={() => { setModal(null); setView("choice") }}
+          onLoginSuccess={handleLoginSuccess}
+        />
+      )}
     </>
   )
 }
-
-export default App
