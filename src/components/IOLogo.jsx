@@ -1,6 +1,11 @@
 import { C } from '../tokens.js'
+import { img } from '../images.js'
 
 export default function IOLogo({ size = 32 }) {
+  const logoSrc = img("logo")
+  if (logoSrc) {
+    return <img src={logoSrc} alt="Investment Officer" style={{ height: size * 0.75, width:"auto", display:"block" }} />
+  }
   return (
     <svg width={size * 2.8} height={size * 0.75} viewBox="0 0 112 30" fill="none">
       <text x="0" y="22" fontFamily="'Merriweather', serif" fontSize="26" fontWeight="700" fill={C.navy}>io</text>

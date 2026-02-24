@@ -11,6 +11,13 @@
 
 export const IMAGES = {
 
+  // ── Logo ─────────────────────────────────────────────────────────────────────
+  // Officieel IO logo — verschijnt overal waar nu de SVG-versie staat
+  // Aanbevolen formaat: SVG of PNG met transparante achtergrond, min. 300px breed
+  logo: null,
+  // "/images/io-logo.svg"
+
+
   // ── Artikelpagina ────────────────────────────────────────────────────────────
   // Redactionele foto bij het artikel over Trump / creditcards / bankaandelen
   // Aanbevolen formaat: 1440×640px, liggend, nieuwsfoto-stijl

@@ -100,7 +100,49 @@ export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLog
     setStep(planId === "pro" ? "payment" : "confirm")
   }
 
-  // ── Plan-stap: volledige pagina buiten reg-layout ─────────────────────────
+  // ── Done: designer bevestigingspagina ────────────────────────────────────────
+  if (step === "done") {
+    const items = t("ob_confirm_items")
+    const titleNl = chosenPlan === "pro" ? t("pf_done_pro") : chosenPlan === "trial" ? t("pf_done_trial") : t("pf_done_free")
+    return (
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", minHeight:"100vh" }}>
+        {/* Links */}
+        <div style={{ padding:"3rem 4rem", display:"flex", flexDirection:"column", justifyContent:"center", background:C.white, position:"relative" }}>
+          <div style={{ position:"absolute", top:"2.5rem", left:"3rem" }}>
+            <IOLogo size={28} />
+          </div>
+          <div style={{ marginTop:"2rem" }}>
+            <h1 style={{ fontFamily:"var(--font-serif)", fontSize:"clamp(2rem,4vw,3rem)", fontWeight:700, color:C.navy, lineHeight:"var(--lh-heading)", letterSpacing:"var(--tracking-heading)", marginBottom:"0.75rem" }}>
+              {titleNl}
+            </h1>
+            <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.9375rem", color:C.gray500, marginBottom:"2rem", lineHeight:"var(--lh-body)" }}>
+              {chosenPlan === "pro" ? t("pf_done_body_pro") : chosenPlan === "trial" ? t("pf_done_body_trial") : t("pf_done_body_free")}
+            </p>
+            <div style={{ marginBottom:"2rem" }}>
+              <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.7rem", fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase", color:C.gray500, marginBottom:"0.875rem" }}>{t("ob_what_now")}</div>
+              {(Array.isArray(items) ? items : []).map(item => (
+                <div key={item} style={{ display:"flex", alignItems:"center", gap:"0.625rem", marginBottom:"0.625rem" }}>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke={C.red} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  <span style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.navy }}>{item}</span>
+                </div>
+              ))}
+            </div>
+            <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.8125rem", color:C.gray500, marginBottom:"2rem", fontStyle:"italic" }}>
+              {t("pf_done_confirm")} <strong>{email}</strong>.
+            </p>
+            <div style={{ display:"flex", gap:"1rem" }}>
+              <button className="btn-navy" style={{ padding:"0.875rem 2rem", fontSize:"1rem" }} onClick={onComplete}>{t("ob_to_website")}</button>
+              <button className="btn-secondary" style={{ padding:"0.875rem 2rem", fontSize:"1rem" }} onClick={() => { onComplete(); }}>{t("ob_to_dashboard")}</button>
+            </div>
+          </div>
+        </div>
+        {/* Rechts — grote foto */}
+        <div style={{ position:"relative", overflow:"hidden", background:`linear-gradient(135deg,${C.navy},#1B3A5C)` }}>
+          <img src="/images/beeld_onboarding_welcome.png" alt="" style={{ width:"100%", height:"100%", objectFit:"cover", position:"absolute", inset:0 }} />
+        </div>
+      </div>
+    )
+  }
   if (step === "plan") {
     return <PlanPickerPage onSelect={handlePlanSelect} onBack={() => setStep("profile")} t={t} />
   }
@@ -273,25 +315,6 @@ export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLog
                 {chosenPlan === "pro" ? t("pf_confirm_pro") : t("pf_confirm_free")}
               </button>
             </>
-          )}
-
-          {/* ── Done ── */}
-          {step === "done" && (
-            <div style={{ textAlign:"center", padding:"1.5rem 0" }}>
-              <div style={{ width:64, height:64, background:C.green, borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 1.5rem" }}>
-                <svg width="28" height="24" viewBox="0 0 28 24" fill="none"><path d="M2 11L10 19L26 3" stroke={C.navy} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              </div>
-              <h2 style={{ fontFamily:"var(--font-sans)", fontSize:"1.75rem", fontWeight:800, lineHeight:"var(--lh-heading)", letterSpacing:"var(--tracking-heading)", color:C.navy, marginBottom:"0.5rem" }}>
-                {chosenPlan === "pro" ? t("pf_done_pro") : chosenPlan === "trial" ? t("pf_done_trial") : t("pf_done_free")}
-              </h2>
-              <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.gray500, lineHeight:"var(--lh-body)", marginBottom:"1.5rem" }}>
-                {chosenPlan === "pro" ? t("pf_done_body_pro") : chosenPlan === "trial" ? t("pf_done_body_trial") : t("pf_done_body_free")}
-              </p>
-              <div className="alert alert-success" style={{ textAlign:"left" }}>
-                {t("pf_done_confirm")} <strong>{email}</strong>.
-              </div>
-              <button className="btn-primary btn-full" style={{ marginTop:"1rem" }} onClick={onComplete}>{t("pf_done_cta")}</button>
-            </div>
           )}
 
         </div>

@@ -302,11 +302,10 @@ export default function OnboardingPage({ onFinish, onDashboard }) {
   const next = () => setStep(s => s + 1)
   return (
     <div style={{ fontFamily:"var(--font-sans)" }}>
-      {step === 0 && <StepBevestiging onNext={next} onDashboard={onDashboard} />}
-      {step === 1 && <StepApp         onNext={next} onSkip={next} />}
-      {step === 2 && <StepNieuwsbrieven onNext={next} onSkip={next} />}
-      {step === 3 && <StepLinkedIn    onNext={next} onSkip={next} />}
-      {step === 4 && <StepAfronden    onFinish={onFinish} />}
+      {step === 0 && <StepApp         onNext={next} onSkip={next} />}
+      {step === 1 && <StepNieuwsbrieven onNext={next} onSkip={next} />}
+      {step === 2 && <StepLinkedIn    onNext={next} onSkip={next} />}
+      {step === 3 && <StepAfronden    onFinish={onFinish} />}
     </div>
   )
 }
