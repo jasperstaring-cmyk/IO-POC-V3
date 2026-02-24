@@ -1,24 +1,24 @@
 import { C } from '../tokens.js'
-import TopNav from '../components/TopNav.jsx'
-import { ProgressBar, RegSidebar } from '../components/shared.jsx'
+import { ProgressBar, RegSidebar, AuthNav } from '../components/shared.jsx'
+import { useLang } from '../LanguageContext.jsx'
 
 export default function AccountTypeChoice({ onChoose, onBack }) {
+  const { t } = useLang()
   return (
     <div className="reg-layout">
-      <TopNav onLogin={() => {}} onSubscribe={onBack} loggedIn={false} />
+      <AuthNav onBack={onBack} />
       <div className="reg-container">
         <div className="reg-main">
           <ProgressBar total={4} current={1} />
 
           <div style={{ display:"inline-block", background:C.gray100, borderRadius:99, padding:"0.2rem 0.875rem", fontFamily:"var(--font-sans)", fontSize:"0.75rem", fontWeight:700, color:C.gray500, letterSpacing:"0.06em", textTransform:"uppercase", marginBottom:"1rem" }}>
-            Jouw abonnement
+            {t("choice_badge")}
           </div>
 
-          <h2 className="reg-step-title">Kies voor wie je toegang wilt hebben</h2>
+          <h2 className="reg-step-title">{t("choice_title")}</h2>
           <p className="reg-step-sub"> </p>
 
           <div className="choice-cards">
-            {/* Personal */}
             <button className="choice-card" onClick={() => onChoose("personal")}>
               <div className="choice-icon">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -26,10 +26,9 @@ export default function AccountTypeChoice({ onChoose, onBack }) {
                   <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke={C.red} strokeWidth="1.75" strokeLinecap="round"/>
                 </svg>
               </div>
-              <div className="choice-label">Voor mijzelf</div>
+              <div className="choice-label">{t("choice_personal")}</div>
             </button>
 
-            {/* Business */}
             <button className="choice-card" onClick={() => onChoose("business")}>
               <div className="choice-icon">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -39,7 +38,7 @@ export default function AccountTypeChoice({ onChoose, onBack }) {
                   <path d="M17 14c2 0 4 1.3 4 3.5" stroke={C.red} strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
               </div>
-              <div className="choice-label">Voor mijn team of organisatie</div>
+              <div className="choice-label">{t("choice_business")}</div>
             </button>
           </div>
         </div>

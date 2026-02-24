@@ -2,10 +2,69 @@ import { useState } from 'react'
 import { C } from '../tokens.js'
 import { JOB_ROLES } from '../data.js'
 import { classifyEmailForReg } from '../utils.js'
-import TopNav from '../components/TopNav.jsx'
-import { ProgressBar, RegSidebar, EmailChip } from '../components/shared.jsx'
+import { ProgressBar, RegSidebar, EmailChip, AuthNav, CheckItem, LangSwitcher } from '../components/shared.jsx'
+import { useLang } from '../LanguageContext.jsx'
+import IOLogo from '../components/IOLogo.jsx'
+
+// ─── Volledige plan-keuze pagina (zelfde look als SubscriptionPage) ─────────
+function PlanPickerPage({ onSelect, onBack, t }) {
+  const PLANS = [
+    { id:"freemium", name:"Freemium", sub:t("plan_freemium_sub"), priceLabel:t("plan_freemium_price"), priceSuffix:"",                  cta:t("plan_freemium_cta"), ctaNote:t("plan_freemium_note"), features:t("plan_freemium_features")||[] },
+    { id:"trial",    name:"Pro Trial", sub:t("plan_trial_sub"),   priceLabel:t("plan_trial_price"),    priceSuffix:t("plan_trial_suffix"), cta:t("plan_trial_cta"),   ctaNote:t("plan_trial_note"),   features:t("plan_trial_features")||[]   },
+    { id:"pro",      name:"Pro",       sub:t("plan_pro_sub"),     priceLabel:t("plan_pro_price"),      priceSuffix:t("plan_pro_suffix"),   cta:t("plan_pro_cta"),     ctaNote:t("plan_pro_note"),     features:t("plan_pro_features")||[]     },
+  ]
+  return (
+    <div style={{ minHeight:"100vh", background:C.white }}>
+      {/* Nav */}
+      <header style={{ position:"sticky", top:0, zIndex:50, background:C.white, borderBottom:`1px solid ${C.gray100}`, boxShadow:"0 1px 6px rgba(12,24,46,0.06)" }}>
+        <div style={{ maxWidth:1120, margin:"0 auto", padding:"0 1.5rem", height:56, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+          <IOLogo />
+          <div style={{ display:"flex", alignItems:"center", gap:"1rem" }}>
+            <LangSwitcher />
+            <button onClick={onBack} style={{ background:"none", border:"none", cursor:"pointer", fontFamily:"var(--font-sans)", fontSize:"0.875rem", color:C.gray500, display:"flex", alignItems:"center", gap:"0.375rem" }}>
+              ← {t("pf_back") || "Terug"}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div style={{ maxWidth:900, margin:"0 auto", padding:"3rem 1.5rem 5rem" }}>
+        {/* Header */}
+        <div style={{ textAlign:"center", marginBottom:"2.5rem" }}>
+          <div style={{ display:"inline-block", background:C.gray100, borderRadius:99, padding:"0.3rem 1rem", fontFamily:"var(--font-sans)", fontSize:"0.8rem", fontWeight:600, color:C.gray500, letterSpacing:"0.06em", textTransform:"uppercase", marginBottom:"1rem" }}>{t("sp_badge")}</div>
+          <h1 style={{ fontFamily:"var(--font-serif)", fontSize:"clamp(1.75rem,4vw,2.5rem)", fontWeight:700, lineHeight:"var(--lh-heading)", letterSpacing:"var(--tracking-heading)", color:C.navy, marginBottom:"1rem" }}>{t("sp_header")}</h1>
+          <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.9375rem", color:C.gray500, lineHeight:"var(--lh-body)" }}>{t("sp_header_sub")}</p>
+        </div>
+
+        <p style={{ textAlign:"center", fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.gray500, marginBottom:"2rem", lineHeight:"var(--lh-body)" }}>{t("sp_personal_intro")}</p>
+
+        {/* Plan kaarten — identiek aan SubscriptionPage */}
+        <div className="sub-cards">
+          {PLANS.map(p => (
+            <div key={p.id} className="sub-card">
+              <div className="sub-card-name">{p.name}</div>
+              <div className="sub-card-sub">{p.sub}</div>
+              <div>
+                <span className="sub-card-price">{p.priceLabel}</span>
+                {p.priceSuffix && <span className="sub-card-price-suffix"> {p.priceSuffix}</span>}
+              </div>
+              <button className="btn-red" style={{ marginTop:"1rem" }} onClick={() => onSelect(p.id)}>{p.cta}</button>
+              <p className="sub-card-note">{p.ctaNote}</p>
+              <div className="sub-card-features">
+                <div className="sub-card-features-title">{t("sp_features_title")}</div>
+                {p.features.map((f,i) => <CheckItem key={i}>{f}</CheckItem>)}
+              </div>
+              <button className="btn-outline" onClick={() => alert(`POC: ${p.name}`)}>{t("sp_all_features")}</button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLogin }) {
+  const { t } = useLang()
   const [step, setStep]             = useState("email")
   const [email, setEmail]           = useState("")
   const [firstName, setFirstName]   = useState("")
@@ -15,18 +74,18 @@ export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLog
   const [chosenPlan, setChosenPlan] = useState(selectedPlan || null)
   const [privateOverride, setPrivateOverride] = useState(false)
 
-  const totalSteps   = chosenPlan === "pro" ? 4 : 3
-  const STEP_NUM     = { email:1, private_warning:1, generic_block:1, existing:1, enterprise:1, whitelist:1, profile:2, plan:3, payment:3, confirm:4, done:4 }
-  const currentStep  = STEP_NUM[step] || 1
+  const totalSteps  = chosenPlan === "pro" ? 4 : 3
+  const STEP_NUM    = { email:1, private_warning:1, generic_block:1, existing:1, enterprise:1, whitelist:1, profile:2, plan:3, payment:3, confirm:4, done:4 }
+  const currentStep = STEP_NUM[step] || 1
 
   function handleEmailSubmit(e) {
     e.preventDefault()
     const type = classifyEmailForReg(email)
-    if (type === "generic")                  { setStep("generic_block"); return }
-    if (type === "private" && !privateOverride) { setStep("private_warning"); return }
-    if (type === "existing")                 { setStep("existing"); return }
-    if (type === "enterprise")               { setStep("enterprise"); return }
-    if (type === "whitelist")                { setStep("whitelist"); return }
+    if (type === "generic")                     { setStep("generic_block"); return }
+    if (type === "private" && !privateOverride)  { setStep("private_warning"); return }
+    if (type === "existing")                    { setStep("existing"); return }
+    if (type === "enterprise")                  { setStep("enterprise"); return }
+    if (type === "whitelist")                   { setStep("whitelist"); return }
     setStep("profile")
   }
 
@@ -41,9 +100,14 @@ export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLog
     setStep(planId === "pro" ? "payment" : "confirm")
   }
 
+  // ── Plan-stap: volledige pagina buiten reg-layout ─────────────────────────
+  if (step === "plan") {
+    return <PlanPickerPage onSelect={handlePlanSelect} onBack={() => setStep("profile")} t={t} />
+  }
+
   return (
     <div className="reg-layout">
-      <TopNav onLogin={onGoLogin} onSubscribe={onBack} loggedIn={false} />
+      <AuthNav onBack={onBack} />
       <div className="reg-container">
         <div className="reg-main">
           <ProgressBar total={totalSteps} current={currentStep} />
@@ -51,29 +115,23 @@ export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLog
           {/* ── E-mail ── */}
           {step === "email" && (
             <>
-              <h2 className="reg-step-title">Maak een gratis account<br/>en kies daarna jouw abonnement</h2>
-              <p className="reg-step-sub">Vul uw persoonlijke gegevens in zodat we uw account kunnen aanmaken.</p>
+              <h2 className="reg-step-title">{t("pf_email_title")}</h2>
+              <p className="reg-step-sub">{t("pf_email_sub")}</p>
               <div className="demo-hint">
-                <strong>Demo scenario's:</strong><br/>
-                <strong>info@aegon.com</strong> → generiek adres geblokkeerd<br/>
-                <strong>nieuw@gmail.com</strong> → privé e-mail waarschuwing<br/>
-                <strong>demo@abnamro.com</strong> → bestaand account<br/>
-                <strong>nieuw@abnamro.com</strong> → enterprise-regeling gevonden<br/>
-                <strong>nieuw@wealthpro.com</strong> → whitelist organisatie<br/>
-                <strong>nieuw@aegon.com</strong> → normale registratie
+                <strong>Demo:</strong> info@aegon.com · nieuw@gmail.com · demo@abnamro.com · nieuw@abnamro.com · nieuw@wealthpro.com · nieuw@aegon.com
               </div>
               <form onSubmit={handleEmailSubmit}>
                 <div className="input-group">
-                  <label className="input-label">Jouw zakelijk e-mailadres</label>
-                  <input className="input-field" type="email" placeholder="Gebruik uw zakelijke email" value={email} onChange={e => setEmail(e.target.value)} autoFocus required />
+                  <label className="input-label">{t("pf_email_label")}</label>
+                  <input className="input-field" type="email" placeholder={t("pf_email_placeholder")} value={email} onChange={e => setEmail(e.target.value)} autoFocus required />
                 </div>
                 <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.85rem", color:C.gray500, lineHeight:"var(--lh-body)", marginBottom:"1.25rem" }}>
-                  Door verder te gaan, maken we een account voor je aan als je er nog geen hebt. Hiermee ga je akkoord met onze{" "}
-                  <button className="link-btn" style={{ fontSize:"0.85rem" }} type="button">Algemene Voorwaarden</button>{" "}
-                  en erken je dat je kennis hebt genomen van het{" "}
-                  <button className="link-btn" style={{ fontSize:"0.85rem" }} type="button">Privacybeleid.</button>
+                  {t("pf_email_terms")}{" "}
+                  <button className="link-btn" style={{ fontSize:"0.85rem" }} type="button">{t("pf_terms_link")}</button>{" "}
+                  {t("pf_privacy_and")}{" "}
+                  <button className="link-btn" style={{ fontSize:"0.85rem" }} type="button">{t("pf_privacy_link")}.</button>
                 </p>
-                <button className="btn-primary btn-full" type="submit">Controleer e-mail</button>
+                <button className="btn-primary btn-full" type="submit">{t("pf_check_email")}</button>
               </form>
             </>
           )}
@@ -81,18 +139,15 @@ export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLog
           {/* ── Generiek geblokkeerd ── */}
           {step === "generic_block" && (
             <>
-              <h2 className="reg-step-title">Persoonlijk e-mailadres vereist</h2>
+              <h2 className="reg-step-title">{t("pf_generic_title")}</h2>
               <EmailChip email={email} onEdit={() => { setStep("email"); setPrivateOverride(false) }} />
               <div className="alert alert-error">
-                <strong>Dit e-mailadres lijkt een algemeen adres.</strong><br/>
-                Uw e-mailadres moet op uw persoonlijke naam staan. Adressen zoals info@, team@, admin@ of service@ worden niet geaccepteerd.
+                <strong>{t("pf_generic_alert")}</strong><br/>{t("pf_generic_body")}
               </div>
-              <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.gray700, marginBottom:"1.5rem", lineHeight:"var(--lh-body)" }}>
-                Gebruik uw persoonlijk zakelijk e-mailadres. Wilt u een bedrijfsaccount aanmaken voor uw hele organisatie?
-              </p>
+              <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.gray700, marginBottom:"1.5rem", lineHeight:"var(--lh-body)" }}>{t("pf_generic_sub")}</p>
               <div style={{ display:"flex", flexDirection:"column", gap:"0.625rem" }}>
-                <button className="btn-primary btn-full" onClick={() => setStep("email")}>Ander e-mailadres gebruiken</button>
-                <button className="btn-secondary btn-full" onClick={onBack}>Bedrijfsaccount aanmaken</button>
+                <button className="btn-primary btn-full" onClick={() => setStep("email")}>{t("pf_generic_other")}</button>
+                <button className="btn-secondary btn-full" onClick={onBack}>{t("pf_generic_biz")}</button>
               </div>
             </>
           )}
@@ -100,18 +155,15 @@ export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLog
           {/* ── Privé waarschuwing ── */}
           {step === "private_warning" && (
             <>
-              <h2 className="reg-step-title">Zakelijk e-mailadres aanbevolen</h2>
+              <h2 className="reg-step-title">{t("pf_private_title")}</h2>
               <EmailChip email={email} onEdit={() => { setStep("email"); setPrivateOverride(false) }} />
               <div className="alert alert-warning">
-                <strong>Dit lijkt een privé e-mailadres.</strong><br/>
-                Investment Officer is bedoeld voor zakelijke professionals. Met een zakelijk e-mailadres krijgt u mogelijk gratis toegang via uw organisatie.
+                <strong>{t("pf_private_alert")}</strong><br/>{t("pf_private_body1")}
               </div>
-              <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.gray700, marginBottom:"1.25rem", lineHeight:"var(--lh-body)" }}>
-                Gebruikt u dit adres toch zakelijk? Dan kunt u doorgaan, maar uw toegang tot premium content is dan afhankelijk van een persoonlijk abonnement.
-              </p>
+              <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.gray700, marginBottom:"1.25rem", lineHeight:"var(--lh-body)" }}>{t("pf_private_body2")}</p>
               <div style={{ display:"flex", flexDirection:"column", gap:"0.625rem" }}>
-                <button className="btn-primary btn-full" onClick={() => { setPrivateOverride(true); setStep("profile") }}>Dit is mijn zakelijke adres, ga door</button>
-                <button className="btn-secondary btn-full" onClick={() => setStep("email")}>Ander e-mailadres gebruiken</button>
+                <button className="btn-primary btn-full" onClick={() => { setPrivateOverride(true); setStep("profile") }}>{t("pf_private_continue")}</button>
+                <button className="btn-secondary btn-full" onClick={() => setStep("email")}>{t("pf_private_other")}</button>
               </div>
             </>
           )}
@@ -119,15 +171,12 @@ export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLog
           {/* ── Bestaand account ── */}
           {step === "existing" && (
             <>
-              <h2 className="reg-step-title">U heeft al een account</h2>
+              <h2 className="reg-step-title">{t("pf_existing_title")}</h2>
               <EmailChip email={email} onEdit={() => setStep("email")} />
-              <div className="alert alert-info">We hebben een bestaand account gevonden voor dit e-mailadres.</div>
-              <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.gray700, marginBottom:"1.5rem", lineHeight:"var(--lh-body)" }}>
-                Wilt u inloggen met uw bestaande account? Of wilt u een nieuw abonnement toevoegen?
-              </p>
-              <div style={{ display:"flex", flexDirection:"column", gap:"0.625rem" }}>
-                <button className="btn-primary btn-full" onClick={onGoLogin}>Inloggen</button>
-                <button className="btn-secondary btn-full" onClick={() => setStep("profile")}>Toch doorgaan en abonnement toevoegen</button>
+              <div className="alert alert-warning">{t("pf_existing_body")}</div>
+              <div style={{ display:"flex", flexDirection:"column", gap:"0.625rem", marginTop:"1rem" }}>
+                <button className="btn-primary btn-full" onClick={onGoLogin}>{t("pf_existing_login")}</button>
+                <button className="btn-secondary btn-full" onClick={() => setStep("email")}>{t("pf_existing_other")}</button>
               </div>
             </>
           )}
@@ -135,135 +184,93 @@ export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLog
           {/* ── Enterprise ── */}
           {step === "enterprise" && (
             <>
-              <h2 className="reg-step-title">Uw organisatie heeft een regeling</h2>
+              <h2 className="reg-step-title">{t("pf_enterprise_title")}</h2>
               <EmailChip email={email} onEdit={() => setStep("email")} />
-              <div className="alert alert-success">
-                <strong>Goed nieuws!</strong> Uw werkgever heeft een enterprise-abonnement bij Investment Officer. U kunt direct toegang krijgen zonder zelf een abonnement af te sluiten.
-              </div>
-              <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.gray700, marginBottom:"1.5rem", lineHeight:"var(--lh-body)" }}>
-                Koppel uw account aan het bedrijfsabonnement van uw werkgever, of sluit toch een persoonlijk abonnement af.
-              </p>
-              <div style={{ display:"flex", flexDirection:"column", gap:"0.625rem" }}>
-                <button className="btn-primary btn-full" onClick={() => setStep("profile")}>Koppelen aan bedrijfsabonnement</button>
-                <button className="btn-secondary btn-full" onClick={() => { setChosenPlan(null); setStep("profile") }}>Toch persoonlijk abonnement afsluiten</button>
-              </div>
+              <div className="alert alert-success">{t("pf_enterprise_body")}</div>
+              <button className="btn-primary btn-full" style={{ marginTop:"1rem" }} onClick={onComplete}>{t("pf_enterprise_access")}</button>
             </>
           )}
 
           {/* ── Whitelist ── */}
           {step === "whitelist" && (
             <>
-              <h2 className="reg-step-title">Uw organisatie komt in aanmerking voor gratis toegang</h2>
+              <h2 className="reg-step-title">{t("pf_whitelist_title")}</h2>
               <EmailChip email={email} onEdit={() => setStep("email")} />
-              <div className="alert alert-success">
-                <strong>U bent de eerste van uw organisatie!</strong> WealthPro komt in aanmerking voor gratis toegang voor al uw medewerkers.
-              </div>
-              <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.gray700, marginBottom:"1.5rem", lineHeight:"var(--lh-body)" }}>
-                Als u een bedrijfsregeling aanmaakt, wordt u automatisch aangemerkt als beheerder en kunt u collega's uitnodigen.
-              </p>
-              <div style={{ display:"flex", flexDirection:"column", gap:"0.625rem" }}>
-                <button className="btn-primary btn-full" onClick={onBack}>Bedrijfsregeling aanmaken voor WealthPro</button>
-                <button className="btn-secondary btn-full" onClick={() => setStep("profile")}>Doorgaan met persoonlijk account</button>
-              </div>
+              <div className="alert alert-success">{t("pf_whitelist_body")}</div>
+              <button className="btn-primary btn-full" style={{ marginTop:"1rem" }} onClick={() => setStep("profile")}>{t("pf_whitelist_cta")}</button>
             </>
           )}
 
           {/* ── Profiel ── */}
           {step === "profile" && (
             <>
-              <h2 className="reg-step-title">Uw persoonlijke gegevens</h2>
-              <p className="reg-step-sub">Vul uw gegevens in om uw account aan te maken.</p>
+              <h2 className="reg-step-title">{t("pf_profile_title")}</h2>
+              <p className="reg-step-sub">{t("pf_profile_sub")}</p>
               <EmailChip email={email} onEdit={() => setStep("email")} />
               <form onSubmit={handleProfileSubmit}>
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0 1rem" }}>
-                  <div className="input-group"><label className="input-label">Voornaam</label><input className="input-field" type="text" placeholder="Voornaam" value={firstName} onChange={e => setFirstName(e.target.value)} required /></div>
-                  <div className="input-group"><label className="input-label">Achternaam</label><input className="input-field" type="text" placeholder="Achternaam" value={lastName} onChange={e => setLastName(e.target.value)} required /></div>
+                  <div className="input-group"><label className="input-label">{t("pf_firstname")}</label><input className="input-field" type="text" placeholder={t("pf_firstname")} value={firstName} onChange={e => setFirstName(e.target.value)} required /></div>
+                  <div className="input-group"><label className="input-label">{t("pf_lastname")}</label><input className="input-field" type="text" placeholder={t("pf_lastname")} value={lastName} onChange={e => setLastName(e.target.value)} required /></div>
                 </div>
                 <div className="input-group">
-                  <label className="input-label">Jouw functie</label>
+                  <label className="input-label">{t("pf_jobrole")}</label>
                   <select className="input-field" value={jobRole} onChange={e => setJobRole(e.target.value)} required>
-                    <option value="">Kies een functie</option>
+                    <option value="">{t("pf_jobrole_pick")}</option>
                     {JOB_ROLES.map(r => <option key={r} value={r}>{r}</option>)}
                   </select>
                 </div>
-                <div className="input-group"><label className="input-label">Wachtwoord</label><input className="input-field" type="password" placeholder="Minimaal 8 tekens" value={password} onChange={e => setPassword(e.target.value)} minLength={8} required /></div>
-                <button className="btn-primary btn-full" type="submit">{chosenPlan ? "Verder naar bevestiging" : "Maak account aan"}</button>
+                <div className="input-group"><label className="input-label">{t("pf_password")}</label><input className="input-field" type="password" placeholder={t("pf_password_hint")} value={password} onChange={e => setPassword(e.target.value)} minLength={8} required /></div>
+                <button className="btn-primary btn-full" type="submit">{chosenPlan ? t("pf_profile_next") : t("pf_profile_create")}</button>
               </form>
-            </>
-          )}
-
-          {/* ── Plan keuze ── */}
-          {step === "plan" && (
-            <>
-              <h2 className="reg-step-title">Kies een abonnement</h2>
-              <p className="reg-step-sub">Selecteer het abonnement dat bij u past.</p>
-              {[
-                { id:"freemium", name:"Freemium",  desc:"Gratis toegang met beperkte content",           price:"Gratis" },
-                { id:"trial",    name:"Pro Trial", desc:"10 dagen volledige toegang, stopt automatisch", price:"Gratis • 10 dagen" },
-                { id:"pro",      name:"Pro",        desc:"Onbeperkte toegang tot editie Nederland",       price:"€ 649,– per jaar" },
-              ].map(opt => (
-                <button key={opt.id} onClick={() => handlePlanSelect(opt.id)}
-                  style={{ display:"flex", alignItems:"center", gap:"1rem", border:`1.5px solid ${C.gray300}`, borderRadius:6, padding:"1rem 1.25rem", background:C.white, cursor:"pointer", textAlign:"left", width:"100%", marginBottom:"0.625rem", transition:"border-color 0.2s, box-shadow 0.2s" }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = C.navy; e.currentTarget.style.boxShadow = "0 2px 8px rgba(12,24,46,0.1)" }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = C.gray300; e.currentTarget.style.boxShadow = "none" }}
-                >
-                  <div style={{ flex:1 }}>
-                    <div style={{ fontFamily:"var(--font-sans)", fontWeight:700, fontSize:"1rem", color:C.navy }}>{opt.name}</div>
-                    <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.875rem", color:C.gray500 }}>{opt.desc}</div>
-                  </div>
-                  <div style={{ fontFamily:"var(--font-sans)", fontWeight:700, fontSize:"0.9rem", color:C.navy, whiteSpace:"nowrap" }}>{opt.price}</div>
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 12L10 8L6 4" stroke={C.gray500} strokeWidth="1.5" strokeLinecap="round"/></svg>
-                </button>
-              ))}
             </>
           )}
 
           {/* ── Betaling ── */}
           {step === "payment" && (
             <>
-              <h2 className="reg-step-title">Betaling</h2>
-              <p className="reg-step-sub">U heeft gekozen voor het Pro abonnement voor €649,– per jaar (excl. btw).</p>
+              <h2 className="reg-step-title">{t("pf_payment_title")}</h2>
+              <p className="reg-step-sub">{t("pf_payment_sub")}</p>
               <div className="alert alert-info" style={{ display:"flex", alignItems:"center", gap:"0.75rem" }}>
                 <span style={{ fontSize:"1.25rem" }}>🔒</span>
-                <span>Uw betaling wordt veilig verwerkt via <strong>Stripe</strong>.</span>
+                <span>{t("pf_payment_secure")} <strong>Stripe</strong>.</span>
               </div>
               <form onSubmit={e => { e.preventDefault(); setStep("confirm") }}>
-                <div className="input-group"><label className="input-label">Kaartnummer</label><input className="input-field" type="text" defaultValue="4242 4242 4242 4242" required /></div>
+                <div className="input-group"><label className="input-label">{t("pf_card_number")}</label><input className="input-field" type="text" defaultValue="4242 4242 4242 4242" required /></div>
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0 1rem" }}>
-                  <div className="input-group"><label className="input-label">Vervaldatum</label><input className="input-field" type="text" defaultValue="12/28" required /></div>
-                  <div className="input-group"><label className="input-label">CVV</label><input className="input-field" type="text" defaultValue="123" required /></div>
+                  <div className="input-group"><label className="input-label">{t("pf_card_expiry")}</label><input className="input-field" type="text" defaultValue="12/28" required /></div>
+                  <div className="input-group"><label className="input-label">{t("pf_card_cvv")}</label><input className="input-field" type="text" defaultValue="123" required /></div>
                 </div>
                 <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:"1.5rem" }}>
-                  <span style={{ fontFamily:"var(--font-sans)", fontSize:"1rem", fontWeight:700, color:C.navy }}>Totaal</span>
+                  <span style={{ fontFamily:"var(--font-sans)", fontSize:"1rem", fontWeight:700, color:C.navy }}>{t("pf_payment_total")}</span>
                   <span style={{ fontFamily:"var(--font-sans)", fontSize:"1.25rem", fontWeight:700, color:C.navy }}>€ 649,–</span>
                 </div>
-                <button className="btn-red btn-full" type="submit">Ga naar betaling</button>
+                <button className="btn-red btn-full" type="submit">{t("pf_payment_cta")}</button>
               </form>
-              <button className="btn-secondary btn-full" style={{ marginTop:"0.75rem" }} onClick={() => setStep("plan")}>Terug</button>
+              <button className="btn-secondary btn-full" style={{ marginTop:"0.75rem" }} onClick={() => setStep("plan")}>{t("pf_payment_back")}</button>
             </>
           )}
 
           {/* ── Bevestiging ── */}
           {step === "confirm" && (
             <>
-              <h2 className="reg-step-title">Overzicht</h2>
-              <p className="reg-step-sub">Controleer of alle gegevens correct zijn.</p>
+              <h2 className="reg-step-title">{t("pf_confirm_title")}</h2>
+              <p className="reg-step-sub">{t("pf_confirm_sub")}</p>
               {[
-                { label:"1. Uw gegevens",    items:[email, `${firstName} ${lastName}`, jobRole] },
-                { label:"2. Uw abonnement",  items:[chosenPlan === "freemium" ? "Freemium — Gratis" : chosenPlan === "trial" ? "Pro Trial — 10 dagen gratis" : "Pro — €649,– per jaar"] },
-                ...(chosenPlan === "pro" ? [{ label:"3. Betaling", items:["Betaling via Stripe"] }] : []),
+                { label: t("pf_confirm_data"), items:[email, `${firstName} ${lastName}`, jobRole], back:"profile" },
+                { label: t("pf_confirm_plan"), items:[chosenPlan === "freemium" ? t("pf_plan_freemium") : chosenPlan === "trial" ? t("pf_plan_trial") : t("pf_plan_pro")], back:"plan" },
+                ...(chosenPlan === "pro" ? [{ label: t("pf_confirm_pay"), items:[t("pf_confirm_stripe")], back:"payment" }] : []),
               ].map((section, i) => (
                 <div key={i} style={{ border:`1px solid ${C.gray200}`, borderRadius:6, padding:"1rem 1.25rem", marginBottom:"0.75rem" }}>
                   <div style={{ fontFamily:"var(--font-sans)", fontSize:"0.7rem", fontWeight:700, letterSpacing:"0.08em", textTransform:"uppercase", color:C.gray500, marginBottom:"0.5rem", display:"flex", justifyContent:"space-between" }}>
                     {section.label}
-                    <button className="link-btn" style={{ fontSize:"0.8rem", textTransform:"none", letterSpacing:0 }} onClick={() => setStep(i===0?"profile":i===1?"plan":"payment")}>Aanpassen</button>
+                    <button className="link-btn" style={{ fontSize:"0.8rem", textTransform:"none", letterSpacing:0 }} onClick={() => setStep(section.back)}>{t("pf_confirm_edit")}</button>
                   </div>
                   {section.items.map((item,j) => <div key={j} style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.navy }}>{item}</div>)}
                 </div>
               ))}
-              {chosenPlan === "trial" && <div className="alert alert-warning" style={{ marginTop:"1rem" }}>Na 10 dagen stopt uw toegang automatisch.</div>}
+              {chosenPlan === "trial" && <div className="alert alert-warning" style={{ marginTop:"1rem" }}>{t("pf_confirm_trial_warn")}</div>}
               <button className="btn-red btn-full" style={{ marginTop:"1rem" }} onClick={() => setStep("done")}>
-                {chosenPlan === "pro" ? "Bevestig en betaal" : "Account aanmaken"}
+                {chosenPlan === "pro" ? t("pf_confirm_pro") : t("pf_confirm_free")}
               </button>
             </>
           )}
@@ -275,15 +282,15 @@ export default function PersonalFlow({ selectedPlan, onComplete, onBack, onGoLog
                 <svg width="28" height="24" viewBox="0 0 28 24" fill="none"><path d="M2 11L10 19L26 3" stroke={C.navy} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </div>
               <h2 style={{ fontFamily:"var(--font-sans)", fontSize:"1.75rem", fontWeight:800, lineHeight:"var(--lh-heading)", letterSpacing:"var(--tracking-heading)", color:C.navy, marginBottom:"0.5rem" }}>
-                {chosenPlan === "pro" ? "Welkom bij Investment Officer Pro!" : chosenPlan === "trial" ? "Uw proefperiode is gestart!" : "Uw account is aangemaakt!"}
+                {chosenPlan === "pro" ? t("pf_done_pro") : chosenPlan === "trial" ? t("pf_done_trial") : t("pf_done_free")}
               </h2>
               <p style={{ fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.gray500, lineHeight:"var(--lh-body)", marginBottom:"1.5rem" }}>
-                {chosenPlan === "pro" ? "U heeft nu onbeperkte toegang tot alle premium content van editie Nederland." : chosenPlan === "trial" ? "U heeft 10 dagen volledige toegang. Na afloop valt u terug naar Freemium." : "U heeft nu toegang tot alle gratis content en nieuwsbrieven."}
+                {chosenPlan === "pro" ? t("pf_done_body_pro") : chosenPlan === "trial" ? t("pf_done_body_trial") : t("pf_done_body_free")}
               </p>
               <div className="alert alert-success" style={{ textAlign:"left" }}>
-                We hebben een bevestigingse-mail gestuurd naar <strong>{email}</strong>.
+                {t("pf_done_confirm")} <strong>{email}</strong>.
               </div>
-              <button className="btn-primary btn-full" style={{ marginTop:"1rem" }} onClick={onComplete}>Ga naar de website</button>
+              <button className="btn-primary btn-full" style={{ marginTop:"1rem" }} onClick={onComplete}>{t("pf_done_cta")}</button>
             </div>
           )}
 

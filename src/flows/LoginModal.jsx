@@ -4,8 +4,10 @@ import { classifyEmailForLogin } from '../utils.js'
 import IOLogo from '../components/IOLogo.jsx'
 import { EmailChip } from '../components/shared.jsx'
 import { GoogleIcon, MicrosoftIcon } from '../components/SsoIcons.jsx'
+import { useLang } from '../LanguageContext.jsx'
 
 export default function LoginModal({ onClose, onGoRegister, onLoginSuccess }) {
+  const { t } = useLang()
   const [step, setStep]         = useState("email")
   const [email, setEmail]       = useState("")
   const [password, setPassword] = useState("")
@@ -42,23 +44,20 @@ export default function LoginModal({ onClose, onGoRegister, onLoginSuccess }) {
               <div className="step-indicator" style={{ marginTop:"1.25rem" }}>
                 <div className="step-dot active"/><div className="step-dot"/>
               </div>
-              <h2 className="modal-title">Inloggen bij Investment Officer</h2>
-              <p className="modal-subtitle">Log in met je zakelijke e-mailadres.</p>
-              <div className="demo-hint">
-                <strong>Demo:</strong> demo@abnamro.com → SSO • demo@gmail.com → privé waarschuwing • demo@onbekend.com → geen account
-              </div>
+              <h2 className="modal-title">{t("lm_title")}</h2>
+              <p className="modal-subtitle">{t("lm_demo_hint")}</p>
               <form onSubmit={handleEmailSubmit}>
                 <div className="input-group">
-                  <label className="input-label">Zakelijk e-mailadres</label>
-                  <input className="input-field" type="email" placeholder="uw@bedrijf.com" value={email} onChange={e => setEmail(e.target.value)} autoFocus required />
+                  <label className="input-label">{t("lm_email_label")}</label>
+                  <input className="input-field" type="email" placeholder={t("lm_email_ph")} value={email} onChange={e => setEmail(e.target.value)} autoFocus required />
                 </div>
-                <button className="btn-primary btn-full" type="submit">Verder</button>
+                <button className="btn-primary btn-full" type="submit">{t("lm_next")}</button>
               </form>
-              <div className="divider">of log in via</div>
-              <button className="sso-btn"><GoogleIcon />Inloggen met Google</button>
-              <button className="sso-btn"><MicrosoftIcon />Inloggen met Microsoft</button>
+              <div className="divider">{t("lm_or")}</div>
+              <button className="sso-btn"><GoogleIcon />{t("lm_google")}</button>
+              <button className="sso-btn"><MicrosoftIcon />{t("lm_microsoft")}</button>
               <p style={{ textAlign:"center", marginTop:"1.25rem", fontFamily:"var(--font-sans)", fontSize:"0.9rem", color:C.gray500 }}>
-                Nog geen account?{" "}<button className="link-btn" onClick={onGoRegister}>Registreer hier</button>
+                {t("lm_no_account")}{" "}<button className="link-btn" onClick={onGoRegister}>{t("lm_register")}</button>
               </p>
             </>
           )}
@@ -67,15 +66,14 @@ export default function LoginModal({ onClose, onGoRegister, onLoginSuccess }) {
           {step === "private_warning" && (
             <>
               <div style={{ marginTop:"1.25rem" }}/>
-              <h2 className="modal-title">Zakelijk e-mailadres vereist</h2>
+              <h2 className="modal-title">{t("lm_private_title")}</h2>
               <EmailChip email={email} onEdit={resetToEmail} />
               <div className="alert alert-warning">
-                <strong>Dit lijkt een privé e-mailadres.</strong><br/>
-                Voor premium toegang heeft u een zakelijk e-mailadres nodig.
+                <strong>{t("pf_private_alert")}</strong><br/>{t("lm_private_body")}
               </div>
               <div style={{ display:"flex", flexDirection:"column", gap:"0.625rem" }}>
-                <button className="btn-primary btn-full" onClick={() => setStep("password")}>Dit is mijn zakelijke adres, ga door</button>
-                <button className="btn-secondary btn-full" onClick={resetToEmail}>Ander e-mailadres gebruiken</button>
+                <button className="btn-primary btn-full" onClick={() => setStep("password")}>{t("pf_private_continue")}</button>
+                <button className="btn-secondary btn-full" onClick={resetToEmail}>{t("lm_private_other")}</button>
               </div>
             </>
           )}
@@ -84,12 +82,12 @@ export default function LoginModal({ onClose, onGoRegister, onLoginSuccess }) {
           {step === "unknown" && (
             <>
               <div style={{ marginTop:"1.25rem" }}/>
-              <h2 className="modal-title">Geen account gevonden</h2>
+              <h2 className="modal-title">{t("lm_unknown_title")}</h2>
               <EmailChip email={email} onEdit={resetToEmail} />
-              <div className="alert alert-error">We hebben geen account gevonden voor dit e-mailadres.</div>
+              <div className="alert alert-error">{t("lm_unknown_body")}</div>
               <div style={{ display:"flex", flexDirection:"column", gap:"0.625rem" }}>
-                <button className="btn-primary btn-full" onClick={() => { onClose(); onGoRegister() }}>Maak een account aan</button>
-                <button className="btn-secondary btn-full" onClick={resetToEmail}>Ander e-mailadres proberen</button>
+                <button className="btn-primary btn-full" onClick={() => { onClose(); onGoRegister() }}>{t("lm_unknown_register")}</button>
+                <button className="btn-secondary btn-full" onClick={resetToEmail}>{t("lm_unknown_other")}</button>
               </div>
             </>
           )}
@@ -100,18 +98,17 @@ export default function LoginModal({ onClose, onGoRegister, onLoginSuccess }) {
               <div className="step-indicator" style={{ marginTop:"1.25rem" }}>
                 <div className="step-dot active"/><div className="step-dot active"/>
               </div>
-              <h2 className="modal-title">Inloggen via uw organisatie</h2>
+              <h2 className="modal-title">{t("lm_sso_title")}</h2>
               <EmailChip email={email} onEdit={resetToEmail} />
               <div className="alert alert-info">
-                <strong>Uw organisatie gebruikt SSO.</strong><br/>
-                Log in via het systeem van uw werkgever.
+                <strong>{t("lm_sso_body")}</strong>
               </div>
               <div style={{ display:"flex", flexDirection:"column", gap:"0.625rem", marginBottom:"1.25rem" }}>
-                <button className="sso-btn" onClick={handleLogin}><GoogleIcon />Doorgaan met Google (ABN AMRO)</button>
-                <button className="sso-btn" onClick={handleLogin}><MicrosoftIcon />Doorgaan met Microsoft (ABN AMRO)</button>
+                <button className="sso-btn" onClick={handleLogin}><GoogleIcon />{t("lm_sso_cta")} (Google)</button>
+                <button className="sso-btn" onClick={handleLogin}><MicrosoftIcon />{t("lm_sso_cta")} (Microsoft)</button>
               </div>
-              <div className="divider">of log in met wachtwoord</div>
-              <button className="btn-secondary btn-full" onClick={() => setStep("password")}>Inloggen met wachtwoord</button>
+              <div className="divider">{t("lm_or")}</div>
+              <button className="btn-secondary btn-full" onClick={() => setStep("password")}>{t("lm_login")}</button>
             </>
           )}
 
@@ -121,17 +118,17 @@ export default function LoginModal({ onClose, onGoRegister, onLoginSuccess }) {
               <div className="step-indicator" style={{ marginTop:"1.25rem" }}>
                 <div className="step-dot active"/><div className="step-dot active"/>
               </div>
-              <h2 className="modal-title">Welkom terug</h2>
+              <h2 className="modal-title">{t("lm_sub")}</h2>
               <EmailChip email={email} onEdit={resetToEmail} />
               <form onSubmit={handleLogin}>
                 <div className="input-group">
-                  <label className="input-label">Wachtwoord</label>
-                  <input className="input-field" type="password" placeholder="Uw wachtwoord" value={password} onChange={e => setPassword(e.target.value)} autoFocus required />
+                  <label className="input-label">{t("lm_password_label")}</label>
+                  <input className="input-field" type="password" placeholder={t("lm_password_ph")} value={password} onChange={e => setPassword(e.target.value)} autoFocus required />
                 </div>
                 <div style={{ textAlign:"right", marginBottom:"1.125rem" }}>
-                  <button className="link-btn" style={{ fontSize:"0.85rem" }} type="button" onClick={() => setStep("forgot")}>Wachtwoord vergeten?</button>
+                  <button className="link-btn" style={{ fontSize:"0.85rem" }} type="button" onClick={() => setStep("forgot")}>{t("lm_forgot")}</button>
                 </div>
-                <button className="btn-primary btn-full" type="submit">Inloggen</button>
+                <button className="btn-primary btn-full" type="submit">{t("lm_login")}</button>
               </form>
             </>
           )}
@@ -140,17 +137,16 @@ export default function LoginModal({ onClose, onGoRegister, onLoginSuccess }) {
           {step === "forgot" && (
             <>
               <div style={{ marginTop:"1.25rem" }}/>
-              <h2 className="modal-title">Wachtwoord vergeten</h2>
-              <p className="modal-subtitle">We sturen je een herstellink.</p>
+              <h2 className="modal-title">{t("lm_forgot")}</h2>
               <form onSubmit={e => { e.preventDefault(); setStep("forgot_sent") }}>
                 <div className="input-group">
-                  <label className="input-label">E-mailadres</label>
+                  <label className="input-label">{t("lm_email_label")}</label>
                   <input className="input-field" type="email" defaultValue={email} autoFocus required />
                 </div>
-                <button className="btn-primary btn-full" type="submit">Stuur herstelmail</button>
+                <button className="btn-primary btn-full" type="submit">{t("lm_next")}</button>
               </form>
               <button className="link-btn" style={{ marginTop:"1rem", display:"block", textAlign:"center", width:"100%" }} onClick={() => setStep("password")}>
-                Terug naar inloggen
+                {t("lm_back")}
               </button>
             </>
           )}
@@ -162,10 +158,10 @@ export default function LoginModal({ onClose, onGoRegister, onLoginSuccess }) {
                 <div style={{ width:56, height:56, background:C.green, borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 1rem" }}>
                   <svg width="24" height="20" viewBox="0 0 24 20" fill="none"><path d="M2 9L9 16L22 2" stroke={C.navy} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                 </div>
-                <h2 className="modal-title" style={{ textAlign:"center" }}>E-mail verstuurd</h2>
+                <h2 className="modal-title" style={{ textAlign:"center" }}>✓</h2>
               </div>
-              <div className="alert alert-success">Herstelmail gestuurd naar <strong>{email}</strong>.</div>
-              <button className="btn-secondary btn-full" style={{ marginTop:"1rem" }} onClick={onClose}>Sluiten</button>
+              <div className="alert alert-success">{t("pf_done_confirm")} <strong>{email}</strong>.</div>
+              <button className="btn-secondary btn-full" style={{ marginTop:"1rem" }} onClick={onClose}>{t("acc_cancel")}</button>
             </>
           )}
 

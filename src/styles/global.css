@@ -34,17 +34,24 @@ a { color: inherit; text-decoration: none; }
 .btn-primary   { background: var(--green); color: var(--navy); border: none; padding: 0.75rem 1.5rem; font-family: var(--font-sans); font-size: 0.9375rem; font-weight: 700; border-radius: 4px; cursor: pointer; transition: background 0.2s, transform 0.1s; white-space: nowrap; display: inline-block; text-align: center; }
 .btn-primary:hover   { background: var(--green-hov); transform: translateY(-1px); }
 .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
 .btn-red       { background: var(--red); color: #fff; border: none; padding: 0.75rem 1.5rem; font-family: var(--font-sans); font-size: 0.9375rem; font-weight: 700; border-radius: 4px; cursor: pointer; transition: background 0.2s, transform 0.1s; white-space: nowrap; width: 100%; }
 .btn-red:hover { background: var(--red-hov); transform: translateY(-1px); }
+
 .btn-secondary { background: #fff; color: var(--navy); border: 1.5px solid var(--gray-300); padding: 0.75rem 1.5rem; font-family: var(--font-sans); font-size: 0.9375rem; font-weight: 500; border-radius: 4px; cursor: pointer; transition: border-color 0.2s, background 0.2s; white-space: nowrap; }
 .btn-secondary:hover { border-color: var(--navy); background: var(--gray-50); }
+
 .btn-outline   { background: transparent; color: var(--navy); border: 1.5px solid var(--gray-300); padding: 0.6rem 1.25rem; font-family: var(--font-sans); font-size: 0.875rem; font-weight: 500; border-radius: 4px; cursor: pointer; transition: border-color 0.2s; width: 100%; }
 .btn-outline:hover { border-color: var(--navy); }
+
 .btn-navy      { background: var(--navy); color: #fff; border: none; padding: 0.5rem 1.25rem; font-family: var(--font-sans); font-size: 0.875rem; font-weight: 600; border-radius: 4px; cursor: pointer; transition: background 0.2s; }
 .btn-navy:hover { background: var(--navy-mid); }
+
 .btn-back      { background: #fff; color: var(--navy); border: 1.5px solid var(--gray-300); padding: 0.75rem 1rem; font-family: var(--font-sans); font-size: 0.9375rem; font-weight: 500; border-radius: 4px; cursor: pointer; transition: border-color 0.2s; display: flex; align-items: center; gap: 0.5rem; }
 .btn-back:hover { border-color: var(--navy); }
+
 .btn-full      { width: 100%; padding: 0.875rem; font-size: 1rem; }
+
 .link-btn      { background: none; border: none; color: var(--red); font-family: var(--font-sans); font-size: 0.9rem; font-weight: 500; cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 2px; }
 .link-btn:hover { color: var(--red-hov); }
 
@@ -68,10 +75,10 @@ select.input-field { appearance: none; background-image: url("data:image/svg+xml
 
 /* ─── Registration layout ───────────────────────────────────────────────────── */
 .reg-layout    { min-height: 100vh; background: var(--gray-50); }
-.reg-container { max-width: 900px; margin: 0 auto; padding: 3rem 1.5rem 5rem; display: grid; grid-template-columns: 1fr 320px; gap: 2.5rem; align-items: start; }
+.reg-container { max-width: 960px; margin: 0 auto; padding: 3rem 1.5rem 5rem; display: grid; grid-template-columns: 1fr 300px; gap: 2.5rem; align-items: start; }
 @media (max-width: 700px) { .reg-container { grid-template-columns: 1fr; } }
 .reg-main      { background: #fff; border-radius: 10px; padding: 2.5rem; box-shadow: 0 2px 16px rgba(12,24,46,0.06); }
-.reg-sidebar   { position: sticky; top: 5rem; }
+.reg-sidebar   { position: sticky; top: 4.5rem; }
 .reg-sidebar-card { background: #fff; border-radius: 10px; padding: 1.75rem; box-shadow: 0 2px 16px rgba(12,24,46,0.06); margin-bottom: 1rem; }
 
 /* ─── Step titles ───────────────────────────────────────────────────────────── */
